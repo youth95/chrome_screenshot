@@ -1,0 +1,17 @@
+[package]
+name = "chrome_screenshot"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+base64 = "0.13.0"
+dirs = "4.0.0"
+headless_chrome = {git = "https://github.com/atroche/rust-headless-chrome", branch = "master"}
+keytar = "0.1.6"
+pbkdf2 = {version = "0.10.1", features = ["sha1"]}
+rusqlite = "0.27.0"
+rust-crypto = "0.2.36"
+tracing = "0.1"
+url = "2.2.2"
