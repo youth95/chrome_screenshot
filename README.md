@@ -17,7 +17,7 @@ pub use chrome_screenshot::fetch_screenshot;
 
 fn main(){
    let contents = fetch_screenshot(
-        "https://google.com.hk", // url
+        "https://google.com.hk", // url, the chrome headless will use all of cookies by the "google.com.hk" in your PC.
         1024, // width
         768,  // height
         "",   // wait for element selector. no wait when it's empty
