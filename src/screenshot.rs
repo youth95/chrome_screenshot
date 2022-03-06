@@ -1,23 +1,50 @@
-use std::{thread::sleep, time::Duration};
+use std::{str::FromStr, thread::sleep, time::Duration};
 
 use headless_chrome::{
-    protocol::cdp::{Page::CaptureScreenshotFormatOption, Target::CreateTarget},
+    protocol::cdp::{Network, Page::CaptureScreenshotFormatOption, Target::CreateTarget},
     Browser,
 };
 
 use url::Url;
 
-use crate::cookies::make_cookies;
+use crate::{cookies::make_cookies, parse_cookies};
 
-pub fn fetch_screenshot(
-    url: &str,
+pub struct FetchScreenshotConfig {
+    url: String,
     width: u16,
     height: u16,
-    element: &str,
+    element: String,
     delay: u64,
     wait_until_navigated: bool,
+    cookies: String,
+}
+
+impl Default for FetchScreenshotConfig {
+    fn default() -> Self {
+        Self {
+            url: Default::default(),
+            width: Default::default(),
+            height: Default::default(),
+            element: Default::default(),
+            delay: Default::default(),
+            wait_until_navigated: Default::default(),
+            cookies: Default::default(),
+        }
+    }
+}
+
+pub fn fetch_screenshot(
+    FetchScreenshotConfig {
+        url,
+        cookies,
+        delay,
+        element,
+        height,
+        wait_until_navigated,
+        width,
+    }: FetchScreenshotConfig,
 ) -> Vec<u8> {
-    let url_parsed = Url::parse(url).unwrap();
+    let url_parsed = Url::parse(url.as_str()).unwrap();
     let host = url_parsed.host().unwrap().to_string();
     tracing::debug!("Parse host_key {}", host);
     let browser = Browser::default().unwrap();
@@ -33,12 +60,18 @@ pub fn fetch_screenshot(
         })
         .unwrap();
     tracing::debug!("Tab Created");
-    let cs = make_cookies(host.as_str());
-    tracing::debug!("Set Cookies by {}: {}", host, &cs);
+
+    let cs = match cookies.is_empty() {
+        true => make_cookies(host.as_str()),
+        false => crate::cookies::Cookies::new(parse_cookies(&cookies, &host)),
+    };
+    tracing::debug!("Tab set Cookies by {}: {}", host, &cs);
+
     tab.set_default_timeout(std::time::Duration::from_secs(60));
-    tracing::debug!("Set default timeout: 60s");
+    tracing::debug!("Tab set default timeout: 60s");
+
     tab.set_cookies(cs.into()).unwrap();
-    tab.navigate_to(url).unwrap();
+    tab.navigate_to(url.as_str()).unwrap();
     tab.enable_log().unwrap();
     if wait_until_navigated {
         tracing::debug!("Wait for until navigated");
@@ -47,7 +80,7 @@ pub fn fetch_screenshot(
 
     if element.is_empty() != true {
         tracing::debug!("Wait for element {}", element);
-        match tab.wait_for_element(element) {
+        match tab.wait_for_element(element.as_str()) {
             Ok(_) => (()),
             Err(_) => {
                 tracing::error!("Wait for element time out");

@@ -56,6 +56,12 @@ fn decrypt(encrypted_data: &[u8], key: &[u8], iv: &[u8]) -> Vec<u8> {
 
 pub struct Cookies(Vec<Network::CookieParam>);
 
+impl Cookies {
+    pub fn new(cookies: Vec<Network::CookieParam>) -> Self {
+        Cookies(cookies)
+    }
+}
+
 pub fn make_cookies(host_key: &str) -> Cookies {
     let password = get_chrome_derived_key();
     let salt = SaltString::new(base64::encode(b"saltysalt").as_str()).unwrap();
@@ -121,7 +127,7 @@ impl Display for Cookies {
             f.write_fmt(format_args!("{}={}", cookie.name, cookie.value))
                 .unwrap();
             if i < cookies_len - 1 {
-                f.write_char(',').unwrap();
+                f.write_char('&').unwrap();
             }
         }
         Ok(())
@@ -145,4 +151,20 @@ fn make_cookie(name: String, value: String, domain: String) -> CookieParam {
         source_port: Default::default(),
         partition_key: Default::default(),
     }
+}
+
+pub fn parse_cookies(cookies: &String, domain: &String) -> Vec<Network::CookieParam> {
+    let seq = cookies.split('&').collect::<Vec<_>>();
+    let mut result = Vec::<Network::CookieParam>::new();
+    for item in seq {
+        let mut item_seq = item.split('=');
+        let name = item_seq.next().unwrap().trim();
+        let value = item_seq.next().unwrap().trim();
+        result.push(make_cookie(
+            name.to_string(),
+            value.to_string(),
+            domain.clone(),
+        ))
+    }
+    result
 }
