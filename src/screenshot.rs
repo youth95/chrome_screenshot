@@ -2,7 +2,7 @@ use std::{thread::sleep, time::Duration};
 
 use headless_chrome::{
     protocol::cdp::{Page::CaptureScreenshotFormatOption, Target::CreateTarget},
-    Browser,
+    Browser, LaunchOptions,
 };
 
 use url::Url;
@@ -17,6 +17,7 @@ pub struct FetchScreenshotConfig {
     pub delay: u64,
     pub wait_until_navigated: bool,
     pub cookies: String,
+    pub headless: bool,
 }
 
 impl Default for FetchScreenshotConfig {
@@ -29,6 +30,7 @@ impl Default for FetchScreenshotConfig {
             delay: Default::default(),
             wait_until_navigated: Default::default(),
             cookies: Default::default(),
+            headless: Default::default(),
         }
     }
 }
@@ -42,12 +44,17 @@ pub fn fetch_screenshot(
         height,
         wait_until_navigated,
         width,
+        headless,
     }: FetchScreenshotConfig,
 ) -> Vec<u8> {
     let url_parsed = Url::parse(url.as_str()).unwrap();
     let host = url_parsed.host().unwrap().to_string();
     tracing::debug!("Parse host_key {}", host);
-    let browser = Browser::default().unwrap();
+    // let browser = Browser::default().unwrap();
+    let mut lunch = LaunchOptions::default_builder();
+    lunch.headless(headless);
+    tracing::debug!("Headless: {}", headless);
+    let browser = Browser::new(lunch.build().unwrap()).unwrap();
     let tab = browser
         .new_tab_with_options(CreateTarget {
             url: "".to_string(),
