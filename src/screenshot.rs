@@ -34,7 +34,7 @@ pub fn fetch_screenshot(
         .unwrap();
     tracing::debug!("Tab Created");
     let cs = make_cookies(host.as_str());
-    tracing::debug!("Set Cookies: {}", &cs);
+    tracing::debug!("Set Cookies by {}: {}", host, &cs);
     tab.set_default_timeout(std::time::Duration::from_secs(60));
     tracing::debug!("Set default timeout: 60s");
     tab.set_cookies(cs.into()).unwrap();
