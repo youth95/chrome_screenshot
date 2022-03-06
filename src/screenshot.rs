@@ -10,13 +10,13 @@ use url::Url;
 use crate::{cookies::make_cookies, parse_cookies};
 
 pub struct FetchScreenshotConfig {
-    url: String,
-    width: u16,
-    height: u16,
-    element: String,
-    delay: u64,
-    wait_until_navigated: bool,
-    cookies: String,
+    pub url: String,
+    pub width: u16,
+    pub height: u16,
+    pub element: String,
+    pub delay: u64,
+    pub wait_until_navigated: bool,
+    pub cookies: String,
 }
 
 impl Default for FetchScreenshotConfig {
