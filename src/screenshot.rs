@@ -1,13 +1,13 @@
-use std::{str::FromStr, thread::sleep, time::Duration};
+use std::{thread::sleep, time::Duration};
 
 use headless_chrome::{
-    protocol::cdp::{Network, Page::CaptureScreenshotFormatOption, Target::CreateTarget},
+    protocol::cdp::{Page::CaptureScreenshotFormatOption, Target::CreateTarget},
     Browser,
 };
 
 use url::Url;
 
-use crate::{cookies::make_cookies, parse_cookies};
+use crate::parse_cookies;
 
 pub struct FetchScreenshotConfig {
     pub url: String,
@@ -62,7 +62,7 @@ pub fn fetch_screenshot(
     tracing::debug!("Tab Created");
 
     let cs = match cookies.is_empty() {
-        true => make_cookies(host.as_str()),
+        true => crate::Cookies::new(vec![]),
         false => crate::cookies::Cookies::new(parse_cookies(&cookies, &host)),
     };
     tracing::debug!("Tab set Cookies by {}: {}", host, &cs);
