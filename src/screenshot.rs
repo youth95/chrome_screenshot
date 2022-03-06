@@ -39,6 +39,7 @@ pub fn fetch_screenshot(
     tracing::debug!("Set default timeout: 60s");
     tab.set_cookies(cs.into()).unwrap();
     tab.navigate_to(url).unwrap();
+    tab.enable_log().unwrap();
     if wait_until_navigated {
         tracing::debug!("Wait for until navigated");
         tab.wait_until_navigated().unwrap();
@@ -46,12 +47,12 @@ pub fn fetch_screenshot(
 
     if element.is_empty() != true {
         tracing::debug!("Wait for element {}", element);
-        tab.wait_for_element(element).unwrap();
         match tab.wait_for_element(element) {
             Ok(_) => (()),
             Err(_) => {
                 tracing::error!("Wait for element time out");
                 tab.close(true).unwrap();
+                panic!("Wait for element time out");
             }
         }
     }
